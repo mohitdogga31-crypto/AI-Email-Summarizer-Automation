@@ -66,7 +66,10 @@ The Switch node classifies emails into one of three categories:
 
 * Mark the email as read
 
+## Workflow Screenshot
 
+![Workflow]<img width="1915" height="968" alt="email-summarizer-workflow png" src="https://github.com/user-attachments/assets/6ac3a42c-bfe5-4b09-8c29-f99fd2112c9a" />
+![execution]<img width="1919" height="966" alt="email-summarizer-execution png" src="https://github.com/user-attachments/assets/d52e2e1a-de65-41d7-a2d2-845ef70c61a0" />
 
 ## Technologies
 
