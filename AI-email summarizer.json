@@ -1,0 +1,546 @@
+{
+  "name": "summarizing email",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/10 * * * *"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "e3890602-17c1-4a07-843c-2935ea71fe05",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2KALSriCWFThyzyz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an email classifier.\n\nAnalyze the email subject and body.\n\nClassify into ONLY ONE of:\n- personal\n- invoice\n- review\n\nRules:\n- category must be lowercase only\n- no extra spaces\n- no punctuation\n- summary must be 2 sentence max\n\nReturn ONLY valid JSON:\n\n{\n  \"category\": \"personal\",\n  \"summary\": \"...\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "e31c0f14-dd73-43a7-b9b8-4f5f23af5cd3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        288
+      ],
+      "id": "6daa3205-114c-4674-b591-dd3b36f40c3b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0TP9NHItBWnsrDSL",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "personal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "975ff8c2-09ef-4785-bdc2-25ff1260af90"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "949d38a5-5a09-4c5b-9995-0d937e73bbc0",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "48cf0cc9-c984-4667-b6f3-457f0cadff87",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "invoice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -16
+      ],
+      "id": "b7bfabb4-1169-470c-90f0-c2cfbe79fba0",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_7924337098457173392"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        -176
+      ],
+      "id": "7a762020-5a97-44ce-8cb7-84630e1790c3",
+      "name": "Add label to message",
+      "webhookId": "2a734abe-3e17-4941-847b-77db9ece10ac",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2KALSriCWFThyzyz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1549132141416949127"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        224
+      ],
+      "id": "d28b4b87-eb61-4df0-8f2d-d12bafa1c409",
+      "name": "Add label to message2",
+      "webhookId": "727eff54-d1a9-4a34-975c-cf77774a0bd9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2KALSriCWFThyzyz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "78600646-f942-4224-924f-1627e5d8dc93",
+      "name": "Mark a message as read",
+      "webhookId": "9295c996-c751-469a-8fda-9dd6a7b0c7cf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2KALSriCWFThyzyz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o",
+          "mode": "list",
+          "cachedResultName": "gmail invoice ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "vendor name",
+              "displayName": "vendor name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice number",
+              "displayName": "invoice number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice date",
+              "displayName": "invoice date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        224
+      ],
+      "id": "3d732c8f-b633-43a0-966a-4b4267c3234b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tSGDlO00KmBIxeGE",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o",
+          "mode": "list",
+          "cachedResultName": "gmail invoice ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1108665978,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZGoQ8PgbmRouVb5hLCy3eeY2gg1g7jqgQ-bff8doQ6o/edit#gid=1108665978"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+            "Sender Email": "={{ $('Gmail Trigger').item.json.From.match(/<(.+)>/)[1] }}",
+            "Date": "={{ $today }}",
+            "Summary": "={{ $('Edit Fields1').item.json.summary }}",
+            "Sender Name": "={{ $('Gmail Trigger').item.json.From.split('<')[0].trim() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Name",
+              "displayName": "Sender Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        -176
+      ],
+      "id": "bc63e804-dc4e-4ec7-8967-10ce6d1ab716",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tSGDlO00KmBIxeGE",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e2706e7-b203-43db-9675-0d04957f78cf",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "36a2f4b6-e151-4e1f-95b5-d690cbdd2631",
+              "name": "category",
+              "value": "={{ JSON.parse($json.output).category }}",
+              "type": "string"
+            },
+            {
+              "id": "e69bc26a-d5b2-4f5f-9b6a-8ddf96628561",
+              "name": "summary",
+              "value": "={{ JSON.parse($json.output).summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "b446d2cb-f95e-4f87-96e0-64ce2c05d837",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read": {
+      "main": [
+        []
+      ]
+    },
+    "Add label to message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e5b10d46-b4e1-4926-b832-8f8291c8914b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "24664926539d9915bc2d8860a47745f08713c1dc9b1016549615bf9cd17833dd"
+  },
+  "id": "UHu9VdxnrJxjFakW",
+  "tags": []
+}
