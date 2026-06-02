@@ -68,8 +68,10 @@ The Switch node classifies emails into one of three categories:
 
 ## Workflow Screenshot
 
-![Workflow]<img width="1915" height="968" alt="email-summarizer-workflow png" src="https://github.com/user-attachments/assets/6ac3a42c-bfe5-4b09-8c29-f99fd2112c9a" />
-![execution]<img width="1919" height="966" alt="email-summarizer-execution png" src="https://github.com/user-attachments/assets/d52e2e1a-de65-41d7-a2d2-845ef70c61a0" />
+![Workflow]<img width="1915" height="968" alt="email-summarizer-workflow" src="https://github.com/user-attachments/assets/61f49f3e-30e9-4ad9-95ca-18979d59f9da" />
+
+![execution]<img width="1919" height="966" alt="email-summarizer-execution" src="https://github.com/user-attachments/assets/ef2a4a1c-9ea5-427c-b2ac-8472fee0b957" />
+
 
 ## Technologies
 
